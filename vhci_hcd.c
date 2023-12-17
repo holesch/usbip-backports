@@ -1393,7 +1393,12 @@ put_usb2_hcd:
 	return ret;
 }
 
-static void vhci_hcd_remove(struct platform_device *pdev)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0)
+static void
+#else
+static int
+#endif
+vhci_hcd_remove(struct platform_device *pdev)
 {
 	struct vhci *vhci = *((void **)dev_get_platdata(&pdev->dev));
 
@@ -1410,6 +1415,10 @@ static void vhci_hcd_remove(struct platform_device *pdev)
 
 	vhci->vhci_hcd_hs = NULL;
 	vhci->vhci_hcd_ss = NULL;
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 5, 0)
+    return 0;
+#endif
 }
 
 #ifdef CONFIG_PM
@@ -1483,7 +1492,11 @@ static int vhci_hcd_resume(struct platform_device *pdev)
 
 static struct platform_driver vhci_driver = {
 	.probe	= vhci_hcd_probe,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0)
 	.remove_new = vhci_hcd_remove,
+#else
+	.remove = vhci_hcd_remove,
+#endif
 	.suspend = vhci_hcd_suspend,
 	.resume	= vhci_hcd_resume,
 	.driver	= {
