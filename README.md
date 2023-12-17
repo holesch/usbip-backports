@@ -6,3 +6,12 @@ and then adding necessary patches, so that it can be used with older Kernels.
 
 This project aims to supports Kernel versions that are currently used in Ubuntu
 LTS releases.
+
+## Installation
+
+To install, use `dkms`:
+
+```
+sudo dkms add .
+sudo dkms install usbip-backports/<version>
+```
