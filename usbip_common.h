@@ -298,6 +298,14 @@ struct usbip_device {
 	__k;								   \
 })
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 7, 0)
+#define kthread_stop_put(k)		\
+	do {				\
+		kthread_stop(k);	\
+		put_task_struct(k);	\
+	} while (0)
+#endif
+
 /* usbip_common.c */
 void usbip_dump_urb(struct urb *purb);
 void usbip_dump_header(struct usbip_header *pdu);
