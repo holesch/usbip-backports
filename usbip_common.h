@@ -29,6 +29,11 @@
 #define pr_fmt(fmt)     KBUILD_MODNAME ": " fmt
 #endif
 
+#ifndef ITER_SOURCE
+#define ITER_SOURCE	1	// == WRITE
+#define ITER_DEST	0	// == READ
+#endif
+
 enum {
 	usbip_debug_xmit	= (1 << 0),
 	usbip_debug_sysfs	= (1 << 1),
