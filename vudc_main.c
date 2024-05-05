@@ -19,7 +19,11 @@ MODULE_PARM_DESC(num, "number of emulated controllers");
 
 static struct platform_driver vudc_driver = {
 	.probe		= vudc_probe,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
 	.remove_new	= vudc_remove,
+#else
+	.remove	= vudc_remove,
+#endif
 	.driver		= {
 		.name	= GADGET_NAME,
 		.dev_groups = vudc_groups,

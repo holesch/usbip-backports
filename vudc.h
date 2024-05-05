@@ -173,6 +173,11 @@ struct vudc_device *alloc_vudc_device(int devid);
 void put_vudc_device(struct vudc_device *udc_dev);
 
 int vudc_probe(struct platform_device *pdev);
-void vudc_remove(struct platform_device *pdev);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
+void
+#else
+int
+#endif
+vudc_remove(struct platform_device *pdev);
 
 #endif /* __USBIP_VUDC_H */
