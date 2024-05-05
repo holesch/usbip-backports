@@ -315,7 +315,9 @@ int usbip_recv(struct socket *sock, void *buf, int size)
 
 	do {
 		sock->sk->sk_allocation = GFP_NOIO;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0)
 		sock->sk->sk_use_task_frag = false;
+#endif
 
 		result = sock_recvmsg(sock, &msg, MSG_WAITALL);
 		if (result <= 0)
