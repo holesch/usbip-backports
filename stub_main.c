@@ -359,6 +359,12 @@ void stub_device_cleanup_urbs(struct stub_device *sdev)
 	}
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
+#define DEVICE_DRIVER_MEMBER driver
+#else
+#define DEVICE_DRIVER_MEMBER drvwrap.driver
+#endif
+
 static int __init usbip_host_init(void)
 {
 	int ret;
@@ -377,14 +383,14 @@ static int __init usbip_host_init(void)
 		goto err_usb_register;
 	}
 
-	ret = driver_create_file(&stub_driver.driver,
+	ret = driver_create_file(&stub_driver.DEVICE_DRIVER_MEMBER,
 				 &driver_attr_match_busid);
 	if (ret) {
 		pr_err("driver_create_file failed\n");
 		goto err_create_file;
 	}
 
-	ret = driver_create_file(&stub_driver.driver,
+	ret = driver_create_file(&stub_driver.DEVICE_DRIVER_MEMBER,
 				 &driver_attr_rebind);
 	if (ret) {
 		pr_err("driver_create_file failed\n");
@@ -402,10 +408,10 @@ err_usb_register:
 
 static void __exit usbip_host_exit(void)
 {
-	driver_remove_file(&stub_driver.driver,
+	driver_remove_file(&stub_driver.DEVICE_DRIVER_MEMBER,
 			   &driver_attr_match_busid);
 
-	driver_remove_file(&stub_driver.driver,
+	driver_remove_file(&stub_driver.DEVICE_DRIVER_MEMBER,
 			   &driver_attr_rebind);
 
 	/*
