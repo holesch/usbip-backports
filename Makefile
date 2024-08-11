@@ -16,7 +16,7 @@ usbip-vudc-y := vudc_dev.o vudc_sysfs.o vudc_tx.o vudc_rx.o vudc_transfer.o vudc
 KDIR ?= "/lib/modules/$(shell uname -r)/build"
 
 kbuild:
-	$(MAKE) -C "$(KDIR)" M=`pwd` modules
+	$(MAKE) -C "$(KDIR)" M="$(CURDIR)" modules
 
 clean:
-	$(MAKE) -C "$(KDIR)" M=`pwd` clean
+	$(MAKE) -C "$(KDIR)" M="$(CURDIR)" clean
