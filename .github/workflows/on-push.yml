@@ -9,7 +9,7 @@ jobs:
         os: [ubuntu-24.04, ubuntu-22.04, ubuntu-20.04]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -17,4 +17,5 @@ jobs:
     - name: Build
       run: |
         set -- /usr/src/linux-headers-*-generic
-        make -C "$1" M="$PWD" modules
+        make KDIR="$1"
+        sudo make KDIR="$1" install
