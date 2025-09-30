@@ -21,7 +21,7 @@ struct kmem_cache *stub_priv_cache;
  * dynamically what device is locally used and what device is exported to a
  * remote host.
  */
-#define MAX_BUSID 16
+#define MAX_BUSID 256
 static struct bus_id_priv busid_table[MAX_BUSID];
 static DEFINE_SPINLOCK(busid_table_lock);
 
