@@ -1,0 +1,25 @@
+name: on-push
+
+on: [push]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install dkms linux-headers-generic
+    - name: Build
+      run: |
+        . dkms.conf
+        kver="$(cd /lib/modules && echo *-generic)"
+        sudo dkms add .
+        if ! sudo dkms install -k "$kver/x86_64" "usbip-backports/$PACKAGE_VERSION"; then
+          cat "/var/lib/dkms/usbip-backports/$PACKAGE_VERSION/build/make.log"
+          exit 1
+        fi

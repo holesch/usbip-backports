@@ -1,0 +1,37 @@
+From 9c52989f3b6f7ff147cd2e1bfe7162703c383510 Mon Sep 17 00:00:00 2001
+From: Simon Holesch <simon@holesch.de>
+Date: Sun, 17 Dec 2023 11:35:31 +0100
+Subject: [PATCH 1/8] iov_iter direction initializer new names
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fixes compile error introduced with upstream commit de4eda9de2d9 ("use
+less confusing names for iov_iter direction initializers"):
+
+    usbip_common.c:312:31: error: ‘ITER_DEST’ undeclared (first use in this function)
+    312 |  iov_iter_kvec(&msg.msg_iter, ITER_DEST, &iov, 1, size);
+        |                               ^~~~~~~~~
+---
+ usbip_common.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/usbip_common.h b/usbip_common.h
+index 282efca64a01..7a2c0ed0896d 100644
+--- a/usbip_common.h
++++ b/usbip_common.h
+@@ -29,6 +29,11 @@
+ #define pr_fmt(fmt)     KBUILD_MODNAME ": " fmt
+ #endif
+ 
++#ifndef ITER_SOURCE
++#define ITER_SOURCE	1	// == WRITE
++#define ITER_DEST	0	// == READ
++#endif
++
+ enum {
+ 	usbip_debug_xmit	= (1 << 0),
+ 	usbip_debug_sysfs	= (1 << 1),
+-- 
+2.53.0
+

@@ -1,0 +1,35 @@
+From f2b39999a9a27ed0254016156ffecb378c85fca4 Mon Sep 17 00:00:00 2001
+From: Simon Holesch <simon@holesch.de>
+Date: Sun, 17 Dec 2023 11:42:52 +0100
+Subject: [PATCH 3/8] Conditionally use sk_use_task_frag
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fixes compile error introduced with upstream commit 98123866fcf3
+("Treewide: Stop corrupting socket's task_frag"):
+
+    usbip_common.c:318:11: error: ‘struct sock’ has no member named ‘sk_use_task_frag’
+    318 |   sock->sk->sk_use_task_frag = false;
+        |           ^~
+---
+ usbip_common.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/usbip_common.c b/usbip_common.c
+index a2b2da1255dd..b3c78b7aa926 100644
+--- a/usbip_common.c
++++ b/usbip_common.c
+@@ -315,7 +315,9 @@ int usbip_recv(struct socket *sock, void *buf, int size)
+ 
+ 	do {
+ 		sock->sk->sk_allocation = GFP_NOIO;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0)
+ 		sock->sk->sk_use_task_frag = false;
++#endif
+ 
+ 		result = sock_recvmsg(sock, &msg, MSG_WAITALL);
+ 		if (result <= 0)
+-- 
+2.53.0
+

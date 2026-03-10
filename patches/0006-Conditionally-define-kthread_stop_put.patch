@@ -1,0 +1,44 @@
+From 51e4b0fca0a3938fd35bdbcfb36daaa714358a7c Mon Sep 17 00:00:00 2001
+From: Simon Holesch <simon@holesch.de>
+Date: Sun, 17 Dec 2023 12:42:40 +0100
+Subject: [PATCH 6/8] Conditionally define kthread_stop_put
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The kthread_stop_put definition was moved to linux/kthread.h. Define it
+again for older Kernel versions.
+
+Fixes compile error introduced with upstream commit 6309727ef271
+("kthread: add kthread_stop_put"):
+
+    vhci_sysfs.c:403:3: error: implicit declaration of function ‘kthread_stop_put’; did you mean ‘kthread_stop’? [-Werror=implicit-function-declaration]
+    403 |   kthread_stop_put(tcp_rx);
+        |   ^~~~~~~~~~~~~~~~
+        |   kthread_stop
+---
+ usbip_common.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/usbip_common.h b/usbip_common.h
+index ae27e0832adf..6d295fc8e56b 100644
+--- a/usbip_common.h
++++ b/usbip_common.h
+@@ -331,6 +331,14 @@ struct usbip_device {
+ 	__k;								   \
+ })
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 7, 0)
++#define kthread_stop_put(k)		\
++	do {				\
++		kthread_stop(k);	\
++		put_task_struct(k);	\
++	} while (0)
++#endif
++
+ /* usbip_common.c */
+ void usbip_dump_urb(struct urb *purb);
+ void usbip_dump_header(struct usbip_header *pdu);
+-- 
+2.53.0
+
