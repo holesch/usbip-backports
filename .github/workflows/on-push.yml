@@ -13,9 +13,13 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install build-essential linux-headers-generic
+        sudo apt-get install dkms linux-headers-generic
     - name: Build
       run: |
-        set -- /usr/src/linux-headers-*-generic
-        make KDIR="$1"
-        sudo make KDIR="$1" install
+        . dkms.conf
+        kver="$(cd /lib/modules && echo *-generic)"
+        sudo dkms add .
+        if ! sudo dkms install -k "$kver/x86_64" "usbip-backports/$PACKAGE_VERSION"; then
+          cat "/var/lib/dkms/usbip-backports/$PACKAGE_VERSION/build/make.log"
+          exit 1
+        fi
