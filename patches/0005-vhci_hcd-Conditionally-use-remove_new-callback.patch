@@ -1,4 +1,4 @@
-From 3124026dc1d6a36f5ee3827f979129f6855b36f5 Mon Sep 17 00:00:00 2001
+From d962af8853a8264d93aae1cb500e880982d4d0a1 Mon Sep 17 00:00:00 2001
 From: Simon Holesch <simon@holesch.de>
 Date: Sun, 17 Dec 2023 11:54:38 +0100
 Subject: [PATCH 5/8] vhci_hcd: Conditionally use remove_new callback
@@ -13,15 +13,18 @@ Fixes compile error introduced with upstream commit 19b3cf44e18c
     1486 |  .remove_new = vhci_hcd_remove,
          |   ^~~~~~~~~~
          |   remove
+
+Also handles commit 9a0749d61a9a ("usb: Switch back to struct
+platform_driver::remove()")
 ---
  vhci_hcd.c | 15 ++++++++++++++-
  1 file changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/vhci_hcd.c b/vhci_hcd.c
-index 82650c11e451..a183032950a3 100644
+index e55690da19e5..a3eafa2283a3 100644
 --- a/vhci_hcd.c
 +++ b/vhci_hcd.c
-@@ -1394,7 +1394,12 @@ put_usb2_hcd:
+@@ -1418,7 +1418,12 @@ put_usb2_hcd:
  	return ret;
  }
  
@@ -35,7 +38,7 @@ index 82650c11e451..a183032950a3 100644
  {
  	struct vhci *vhci = *((void **)dev_get_platdata(&pdev->dev));
  
-@@ -1411,6 +1416,10 @@ static void vhci_hcd_remove(struct platform_device *pdev)
+@@ -1435,6 +1440,10 @@ static void vhci_hcd_remove(struct platform_device *pdev)
  
  	vhci->vhci_hcd_hs = NULL;
  	vhci->vhci_hcd_ss = NULL;
@@ -46,14 +49,14 @@ index 82650c11e451..a183032950a3 100644
  }
  
  #ifdef CONFIG_PM
-@@ -1484,7 +1493,11 @@ static int vhci_hcd_resume(struct platform_device *pdev)
+@@ -1508,7 +1517,11 @@ static int vhci_hcd_resume(struct platform_device *pdev)
  
  static struct platform_driver vhci_driver = {
  	.probe	= vhci_hcd_probe,
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0)
- 	.remove_new = vhci_hcd_remove,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
++	.remove_new = vhci_hcd_remove,
 +#else
-+	.remove = vhci_hcd_remove,
+ 	.remove = vhci_hcd_remove,
 +#endif
  	.suspend = vhci_hcd_suspend,
  	.resume	= vhci_hcd_resume,

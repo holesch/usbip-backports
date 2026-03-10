@@ -1,4 +1,4 @@
-From c4586d81d58588a9a9a3b85091e98be6ba62e388 Mon Sep 17 00:00:00 2001
+From 49b7d4b6f869440a4a850a2958c7bf44e3f7d914 Mon Sep 17 00:00:00 2001
 From: Simon Holesch <simon@holesch.de>
 Date: Sun, 17 Dec 2023 11:49:15 +0100
 Subject: [PATCH 4/8] Add USBIP_URB_* URB transfer flags

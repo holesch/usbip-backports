@@ -1,4 +1,4 @@
-From 51e4b0fca0a3938fd35bdbcfb36daaa714358a7c Mon Sep 17 00:00:00 2001
+From 58ee337118d69461cbde2dea90cd97ccef879b30 Mon Sep 17 00:00:00 2001
 From: Simon Holesch <simon@holesch.de>
 Date: Sun, 17 Dec 2023 12:42:40 +0100
 Subject: [PATCH 6/8] Conditionally define kthread_stop_put

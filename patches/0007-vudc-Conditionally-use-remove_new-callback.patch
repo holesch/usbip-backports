@@ -1,4 +1,4 @@
-From b76e551b772d160accbe333f1249a8f67211dc59 Mon Sep 17 00:00:00 2001
+From ba67f2d89588b904da23bddefafa855eb9a55f2a Mon Sep 17 00:00:00 2001
 From: Simon Holesch <simon@holesch.de>
 Date: Mon, 6 May 2024 00:42:51 +0200
 Subject: [PATCH 7/8] vudc: Conditionally use remove_new callback
@@ -13,11 +13,14 @@ vudc: Convert to platform remove callback returning void"):
     22 |  .remove_new = vudc_remove,
        |   ^~~~~~~~~~
        |   remove
+
+Also handles commit 9a0749d61a9a ("usb: Switch back to struct
+platform_driver::remove()")
 ---
  vudc.h      |  7 ++++++-
  vudc_dev.c  | 10 +++++++++-
- vudc_main.c |  4 ++++
- 3 files changed, 19 insertions(+), 2 deletions(-)
+ vudc_main.c |  6 +++++-
+ 3 files changed, 20 insertions(+), 3 deletions(-)
 
 diff --git a/vudc.h b/vudc.h
 index faf61c9c6a98..880947722e00 100644
@@ -62,15 +65,16 @@ index f11535020e35..29c70d8bd466 100644
 +#endif
  }
 diff --git a/vudc_main.c b/vudc_main.c
-index 8bee553e4894..8c354a5643e0 100644
+index 993e721cb840..cfbd605ff424 100644
 --- a/vudc_main.c
 +++ b/vudc_main.c
 @@ -19,7 +19,11 @@ MODULE_PARM_DESC(num, "number of emulated controllers");
  
  static struct platform_driver vudc_driver = {
  	.probe		= vudc_probe,
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
- 	.remove_new	= vudc_remove,
+-	.remove		= vudc_remove,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 13, 0)
++	.remove_new	= vudc_remove,
 +#else
 +	.remove	= vudc_remove,
 +#endif

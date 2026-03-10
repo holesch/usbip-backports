@@ -1,4 +1,4 @@
-From 16db9fad055ec0c73e0d6474c9952b1070be2574 Mon Sep 17 00:00:00 2001
+From 3ba119963a5e9cae312984b72e1915fb42de5487 Mon Sep 17 00:00:00 2001
 From: Simon Holesch <simon@holesch.de>
 Date: Sun, 5 May 2024 20:25:14 +0200
 Subject: [PATCH 8/8] Conditionally use old driver member name

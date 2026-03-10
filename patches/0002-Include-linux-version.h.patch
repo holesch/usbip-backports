@@ -1,4 +1,4 @@
-From b75db73bf55c5916cd3cdf3f5d6502b48134fefb Mon Sep 17 00:00:00 2001
+From 06574181ead54c95ab3132f1a2614f8a6f5e276e Mon Sep 17 00:00:00 2001
 From: Simon Holesch <simon@holesch.de>
 Date: Sun, 17 Dec 2023 11:41:05 +0100
 Subject: [PATCH 2/8] Include linux/version.h
