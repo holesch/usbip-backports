@@ -11,7 +11,10 @@
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0)
 #include <linux/string_choices.h>
+#endif
 
 #include "usbip_common.h"
 #include "vhci.h"

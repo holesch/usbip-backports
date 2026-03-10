@@ -405,4 +405,11 @@ static inline void usbip_kcov_remote_stop(void) { }
 
 #endif /* CONFIG_KCOV */
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 9, 0)
+static inline const char *str_plural(size_t num)
+{
+	return num == 1 ? "" : "s";
+}
+#endif
+
 #endif /* __USBIP_COMMON_H */
