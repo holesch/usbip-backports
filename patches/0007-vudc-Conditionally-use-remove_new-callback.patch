@@ -1,0 +1,82 @@
+From b76e551b772d160accbe333f1249a8f67211dc59 Mon Sep 17 00:00:00 2001
+From: Simon Holesch <simon@holesch.de>
+Date: Mon, 6 May 2024 00:42:51 +0200
+Subject: [PATCH 7/8] vudc: Conditionally use remove_new callback
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fixes compile error introduced with upstream commit b9a24821c7f7 ("USB: usbip:
+vudc: Convert to platform remove callback returning void"):
+
+    vudc_main.c:22:3: error: ‘struct platform_driver’ has no member named ‘remove_new’; did you mean ‘remove’?
+    22 |  .remove_new = vudc_remove,
+       |   ^~~~~~~~~~
+       |   remove
+---
+ vudc.h      |  7 ++++++-
+ vudc_dev.c  | 10 +++++++++-
+ vudc_main.c |  4 ++++
+ 3 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/vudc.h b/vudc.h
+index faf61c9c6a98..880947722e00 100644
+--- a/vudc.h
++++ b/vudc.h
+@@ -173,6 +173,11 @@ struct vudc_device *alloc_vudc_device(int devid);
+ void put_vudc_device(struct vudc_device *udc_dev);
+ 
+ int vudc_probe(struct platform_device *pdev);
+-void vudc_remove(struct platform_device *pdev);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
++void
++#else
++int
++#endif
++vudc_remove(struct platform_device *pdev);
+ 
+ #endif /* __USBIP_VUDC_H */
+diff --git a/vudc_dev.c b/vudc_dev.c
+index f11535020e35..29c70d8bd466 100644
+--- a/vudc_dev.c
++++ b/vudc_dev.c
+@@ -628,11 +628,19 @@ out:
+ 	return ret;
+ }
+ 
+-void vudc_remove(struct platform_device *pdev)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
++void
++#else
++int
++#endif
++vudc_remove(struct platform_device *pdev)
+ {
+ 	struct vudc *udc = platform_get_drvdata(pdev);
+ 
+ 	usb_del_gadget_udc(&udc->gadget);
+ 	cleanup_vudc_hw(udc);
+ 	kfree(udc);
++#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 8, 0)
++    return 0;
++#endif
+ }
+diff --git a/vudc_main.c b/vudc_main.c
+index 8bee553e4894..8c354a5643e0 100644
+--- a/vudc_main.c
++++ b/vudc_main.c
+@@ -19,7 +19,11 @@ MODULE_PARM_DESC(num, "number of emulated controllers");
+ 
+ static struct platform_driver vudc_driver = {
+ 	.probe		= vudc_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
+ 	.remove_new	= vudc_remove,
++#else
++	.remove	= vudc_remove,
++#endif
+ 	.driver		= {
+ 		.name	= GADGET_NAME,
+ 		.dev_groups = vudc_groups,
+-- 
+2.53.0
+

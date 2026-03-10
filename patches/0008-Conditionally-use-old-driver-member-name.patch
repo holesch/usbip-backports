@@ -1,0 +1,67 @@
+From 16db9fad055ec0c73e0d6474c9952b1070be2574 Mon Sep 17 00:00:00 2001
+From: Simon Holesch <simon@holesch.de>
+Date: Sun, 5 May 2024 20:25:14 +0200
+Subject: [PATCH 8/8] Conditionally use old driver member name
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fixes compile error introduced with upstream commit 49a78b05d5ca ("USB: core:
+Use device_driver directly in struct usb_driver and usb_device_driver"):
+
+    stub_main.c:380:39: error: ‘struct usb_device_driver’ has no member named ‘driver’
+    380 |  ret = driver_create_file(&stub_driver.driver,
+---
+ stub_main.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/stub_main.c b/stub_main.c
+index 79110a69d697..6ae84507bed3 100644
+--- a/stub_main.c
++++ b/stub_main.c
+@@ -359,6 +359,12 @@ void stub_device_cleanup_urbs(struct stub_device *sdev)
+ 	}
+ }
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
++#define DEVICE_DRIVER_MEMBER driver
++#else
++#define DEVICE_DRIVER_MEMBER drvwrap.driver
++#endif
++
+ static int __init usbip_host_init(void)
+ {
+ 	int ret;
+@@ -377,14 +383,14 @@ static int __init usbip_host_init(void)
+ 		goto err_usb_register;
+ 	}
+ 
+-	ret = driver_create_file(&stub_driver.driver,
++	ret = driver_create_file(&stub_driver.DEVICE_DRIVER_MEMBER,
+ 				 &driver_attr_match_busid);
+ 	if (ret) {
+ 		pr_err("driver_create_file failed\n");
+ 		goto err_create_file;
+ 	}
+ 
+-	ret = driver_create_file(&stub_driver.driver,
++	ret = driver_create_file(&stub_driver.DEVICE_DRIVER_MEMBER,
+ 				 &driver_attr_rebind);
+ 	if (ret) {
+ 		pr_err("driver_create_file failed\n");
+@@ -402,10 +408,10 @@ err_usb_register:
+ 
+ static void __exit usbip_host_exit(void)
+ {
+-	driver_remove_file(&stub_driver.driver,
++	driver_remove_file(&stub_driver.DEVICE_DRIVER_MEMBER,
+ 			   &driver_attr_match_busid);
+ 
+-	driver_remove_file(&stub_driver.driver,
++	driver_remove_file(&stub_driver.DEVICE_DRIVER_MEMBER,
+ 			   &driver_attr_rebind);
+ 
+ 	/*
+-- 
+2.53.0
+

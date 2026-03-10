@@ -1,0 +1,63 @@
+From 3124026dc1d6a36f5ee3827f979129f6855b36f5 Mon Sep 17 00:00:00 2001
+From: Simon Holesch <simon@holesch.de>
+Date: Sun, 17 Dec 2023 11:54:38 +0100
+Subject: [PATCH 5/8] vhci_hcd: Conditionally use remove_new callback
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Fixes compile error introduced with upstream commit 19b3cf44e18c
+("usbip: vhci_hcd: Convert to platform remove callback returning void"):
+
+    vhci_hcd.c:1486:3: error: ‘struct platform_driver’ has no member named ‘remove_new’; did you mean ‘remove’?
+    1486 |  .remove_new = vhci_hcd_remove,
+         |   ^~~~~~~~~~
+         |   remove
+---
+ vhci_hcd.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/vhci_hcd.c b/vhci_hcd.c
+index 82650c11e451..a183032950a3 100644
+--- a/vhci_hcd.c
++++ b/vhci_hcd.c
+@@ -1394,7 +1394,12 @@ put_usb2_hcd:
+ 	return ret;
+ }
+ 
+-static void vhci_hcd_remove(struct platform_device *pdev)
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0)
++static void
++#else
++static int
++#endif
++vhci_hcd_remove(struct platform_device *pdev)
+ {
+ 	struct vhci *vhci = *((void **)dev_get_platdata(&pdev->dev));
+ 
+@@ -1411,6 +1416,10 @@ static void vhci_hcd_remove(struct platform_device *pdev)
+ 
+ 	vhci->vhci_hcd_hs = NULL;
+ 	vhci->vhci_hcd_ss = NULL;
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 5, 0)
++    return 0;
++#endif
+ }
+ 
+ #ifdef CONFIG_PM
+@@ -1484,7 +1493,11 @@ static int vhci_hcd_resume(struct platform_device *pdev)
+ 
+ static struct platform_driver vhci_driver = {
+ 	.probe	= vhci_hcd_probe,
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0)
+ 	.remove_new = vhci_hcd_remove,
++#else
++	.remove = vhci_hcd_remove,
++#endif
+ 	.suspend = vhci_hcd_suspend,
+ 	.resume	= vhci_hcd_resume,
+ 	.driver	= {
+-- 
+2.53.0
+
